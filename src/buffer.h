@@ -1,5 +1,5 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#ifndef VINCURSES_BUFFER_H
+#define VINCURSES_BUFFER_H
 
 #include <vector>
 #include <iostream>
@@ -8,40 +8,44 @@
 namespace ViNCurses{
     class Window;
 
-    class Buffer{
-        std::stringstream* _buffer;
-        int _buffer_row;
-        int _buffer_col;
-        int _buffer_attr;
+    class Buffer: public std::stringstream{
+        unsigned int _buffer_row;
+        unsigned int _buffer_col;
+        unsigned int _buffer_attr;
 
         std::streambuf* _coutbuf;
 
+    public:
         class Element{
             std::string _content;
-            int _row;
-            int _col;
-            int _attr;
+            unsigned int _row;
+            unsigned int _col;
+            unsigned int _attr;
 
         public:
-            Element(std::string content, int row, int col, int attr);
+            Element(std::string content, unsigned int row, unsigned int col, unsigned int attr);
             ~Element();
 
-            void write(Window* window);
+            unsigned int row() const;
+            unsigned int col() const;
+            unsigned int attr() const;
+            std::string content() const;
         };
-
+    private:
         std::vector<Element*> _content;
     public:
         Buffer();
         ~Buffer();
 
-        void clear();
-        void buffer_cout(int row, int col, int attr=0);
-        void finish_cout();
-        std::ostream& operator()(int row, int col, int attr=0);
-        void finish();
+        void buffer_cout(        unsigned int row, unsigned int col, unsigned int attr=0);
+        Buffer& operator()(unsigned int row, unsigned int col, unsigned int attr=0);
+        void clear_buffer();
+        void flush_buffer();
 
-        void write(Window* window);
+        unsigned int width() const;
+        unsigned int height() const;
+        std::vector<Element*> content() const;
     };
 }
 
-#endif //BUFFER_H
+#endif //VINCURSES_BUFFER_H

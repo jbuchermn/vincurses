@@ -50,11 +50,11 @@ void App::run(){
     curs_set(0);
     keypad(_w_input, TRUE); // Recognize arrow keys and CTRL
      
-    // Setup windows
-    setup_windows();
+    // Call abstract init procedure
+    init_windows();
 
     // Initial select and refresh
-    ensure_active_index();
+    set_active_window(1);
     refresh();
 
     while(true){ 
@@ -67,13 +67,29 @@ void App::run(){
         
         if(cmd==":q"){ // Quit
             break;
-        }else if(cmd=="w"){ // Switch active window
-            std::string index = input();
-            if(index.length()!=1){
-                status("Usage: w<window index>");
+        }else if(cmd.length()==1 and cmd[0]==23){ // <C-w> to switch or move active window
+            std::string c = input();
+            if(c.length()!=1){
+                status("Usage: <C-w><hjklHJKL>");
             }else{
-                _active_index = index[0]-'0';
-                ensure_active_index();
+                char cmd = c[0];
+                if(cmd=='H' or cmd=='J' or cmd=='K' or cmd=='L'){
+                    // Move
+                    if(_active_index>0 and _active_index<=_windows.size()){
+                        _windows[_active_index-1]->box()->move(cmd);
+                        setup_windows();
+                    }
+                }else if(cmd=='h' or cmd=='j' or cmd=='k' or cmd=='l'){
+                    // Switch active
+                    if(_active_index>0 and _active_index<=_windows.size()){
+                        Box* b = _windows[_active_index-1]->box()->find_leaf_in_dir(cmd);
+                        for(unsigned int i=0; i<_windows.size(); i++){
+                            if(_windows[i]->box()==b){
+                                set_active_window(i+1);
+                            }
+                        }
+                    }
+                }
             }
 
             processed=true;
@@ -97,14 +113,21 @@ void App::refresh(){
     for(unsigned int i=0; i<_windows.size(); i++) _windows[i]->refresh();
 }
 
-void App::ensure_active_index(){
+void App::set_active_window(int index){
+    int i1 = _active_index;
+
+    _active_index = index;
     if(_active_index<1 or _active_index>_windows.size()) _active_index=1;
+
+    int i2 = _active_index;
+
+    if(i1!=i2){
+        if(i1>0 and i1<=_windows.size()) _windows[i1-1]->on_active_change();
+        if(i2>0 and i2<=_windows.size()) _windows[i2-1]->on_active_change();
+    }
 }
 
-void App::rescale_windows(){
-    std::vector<Box*> boxes;
-    for(unsigned int i=0; i<_windows.size(); i++) boxes.push_back(&_windows[i]->box());
-    Box::match(boxes, _main_height, _main_width);
+void App::setup_windows(){
     for(unsigned int i=0; i<_windows.size(); i++) _windows[i]->setup();
 }
 
@@ -119,12 +142,16 @@ void App::index_active(const Window* window, int& index, bool& active) const{
 }
 
 
-void App::add_window(Window* window){
-    window->assign(this);
+void App::add_window(Window* window, Box* box){
+    if(_windows.size()==0){
+        box = new Box(_main_height, _main_width);
+    }else if(box==0) return; // If not root, box needs to be given
+
+    window->assign(this, box);
     _windows.push_back(window);
 
-    rescale_windows();
-    ensure_active_index();
+    setup_windows();
+    set_active_window(_active_index);
     refresh();
 }
 
@@ -137,10 +164,19 @@ void App::remove_window(Window* window){
         }
     }
 
-    delete window;
+    window->clear();
 
-    rescale_windows();
-    ensure_active_index();
+    Box* rem = window->box();
+    window->assign(0,0);
+
+    if(_windows.size()==0){
+        delete rem;
+    }else{
+        _windows[0]->box()->root()->remove(rem);
+    }
+
+    setup_windows();
+    set_active_window(_active_index);
     refresh();
 }
 

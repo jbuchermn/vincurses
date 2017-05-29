@@ -1,5 +1,5 @@
-#ifndef VINAPP_H
-#define VINAPP_H
+#ifndef VINCURSES_APP_H
+#define VINCURSES_APP_H
 
 #include <ncurses.h>
 
@@ -30,13 +30,14 @@ namespace ViNCurses{
         int _active_index;
 
         void refresh();
-        void ensure_active_index();
-        void rescale_windows();
+        void setup_windows();
+        void set_active_window(int index);
 
     protected:
-        void add_window(Window* window);
+        void add_window(Window* window, Box* box=0);
         void remove_window(Window* window);
-        virtual void setup_windows()=0;
+
+        virtual void init_windows()=0;
         virtual bool command(std::string command, bool before_window);
 
     public:
@@ -53,4 +54,4 @@ namespace ViNCurses{
     };
 }
 
-#endif //VINAPP_H
+#endif //VINCURSES_APP_H

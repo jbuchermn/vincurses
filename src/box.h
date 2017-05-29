@@ -1,39 +1,52 @@
-#ifndef BOX_H
-#define BOX_H
+#ifndef VINCURSES_BOX_H
+#define VINCURSES_BOX_H
 
+#include <iostream>
 #include <vector>
 
-#define VIN_ALIGN_TL  1
-#define VIN_ALIGN_T   2
-#define VIN_ALIGN_TR  3
-#define VIN_ALIGN_R   4
-#define VIN_ALIGN_BR  5
-#define VIN_ALIGN_B   6
-#define VIN_ALIGN_BL  7
-#define VIN_ALIGN_L   8
 
 namespace ViNCurses{
+    class App;
+
     class Box{
-        int _align;
-        int _pref_width;
-        int _pref_height;
+        friend class App; // Make constructor accessible from App
 
-        int _row;
-        int _col;
-        int _width;
-        int _height;
+        // Stored in any node in the tree
+        const unsigned int _root_height;
+        const unsigned int _root_width;
 
+        // Tree structure
+        Box* _parent;
+        Box* _first_child;
+        Box* _second_child;
+
+        bool _split_horizontal;
+        double _first_child_percentage;
+
+        // Root constructor
+        Box(unsigned int root_height, unsigned int root_width);
+        
+        // Children constructor
+        Box(Box* parent);
+    
     public:
-        Box(int align, int pref_height, int pref_width);
-    
-        int row() const;
-        int col() const;
-        int width() const;
-        int height() const;
-    
-        static void match(std::vector<Box*> boxes, int total_height, int total_width);
+        // Mutation methods
+        Box* split(char cmd, double new_box_percentage);
+        void move(char cmd);
+        Box* remove(Box* box);
+
+        // Traversal
+        Box* find_leaf_in_dir(char dir);
+
+        // Getters
+        Box* root();
+        Box* parent() const;
+        unsigned int row() const;
+        unsigned int col() const;
+        unsigned int width() const;
+        unsigned int height() const;
     };
 }
 
 
-#endif // BOX_H
+#endif // VINCURSES_BOX_H
