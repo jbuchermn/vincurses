@@ -36,23 +36,30 @@ namespace ViNCurses{
         void set_active_window(int index);
 
     protected:
+        // Add and remove a window, box!=0 except for first window
         void add_window(Window* window, Box* box=0);
         void remove_window(Window* window);
 
+        // Set up inital window configuration
         virtual void init_windows()=0;
+
+        // Process command - called twice, once before and once after active window
         virtual bool command(std::string command, bool before_window);
 
     public:
         App();
         virtual ~App();
+        
+        // internal
+        void index_active(const Window* window, int& index, bool& active) const;
+        
+        // Main function
         void run();
 
+        // Set status, working or read input
         void status(std::string status);
         void working(bool working);
-
-        virtual std::string input();
-
-        void index_active(const Window* window, int& index, bool& active) const;
+        std::string input();
     };
 }
 

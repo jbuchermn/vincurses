@@ -37,11 +37,13 @@ namespace ViNCurses{
         Buffer();
         ~Buffer();
 
-        void buffer_cout(        unsigned int row, unsigned int col, unsigned int attr=0);
+        // Controls
+        void buffer_cout(  unsigned int row, unsigned int col, unsigned int attr=0);
         Buffer& operator()(unsigned int row, unsigned int col, unsigned int attr=0);
         void clear_buffer();
         void flush_buffer();
 
+        // Getters
         unsigned int width() const;
         unsigned int height() const;
         std::vector<Element*> content() const;
