@@ -33,6 +33,7 @@ namespace ViNCurses{
         // Mutation methods
         Box* split(char cmd, double new_box_percentage);
         void move(char cmd);
+        void resize(char cmd);
         Box* remove(Box* box);
 
         // Traversal

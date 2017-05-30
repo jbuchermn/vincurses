@@ -33,8 +33,9 @@ void App::run(){
     
     // Setup colors
     start_color();
-    init_pair(VIN_ACTIVE_WINDOW_BORDER_, COLOR_CYAN, COLOR_BLACK);
-    init_pair(VIN_SELECTION_,            COLOR_BLACK, COLOR_CYAN);
+    init_pair(VIN_ACTIVE_WINDOW_BORDER_, COLOR_CYAN, COLOR_BLACK   );
+    init_pair(VIN_SELECTION_,            COLOR_BLACK, COLOR_CYAN   );
+    init_pair(VIN_HIGHLIGHT_,            COLOR_BLACK, COLOR_MAGENTA);
 
     // Setup base windows
     _w_input =   newwin(1, _main_width,   _main_height,   0             );
@@ -88,6 +89,12 @@ void App::run(){
                                 set_active_window(i+1);
                             }
                         }
+                    }
+                }else if(cmd=='+' or cmd=='-' or cmd=='0'){
+                    // Resize box
+                    if(_active_index>0 and _active_index<=_windows.size()){
+                        _windows[_active_index-1]->box()->resize(cmd);
+                        setup_windows();
                     }
                 }
             }

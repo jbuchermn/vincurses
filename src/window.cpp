@@ -12,7 +12,11 @@ Window::Window():
     _window(0),
     _parent(0),
     _box(0),
-    _stale(true){}
+    _stale(true),
+    _offset_row(0),
+    _offset_col(0){
+
+}
 
 Window::~Window(){
     if(_window!=0) delwin(_window);
@@ -71,6 +75,8 @@ void Window::offset(int& row, int& col) const{ row=_offset_row; col=_offset_col;
 void Window::assign(App* parent, Box* box){
     _parent=parent;
     _box=box;
+
+    stale();
 }
 
 void Window::setup(){
@@ -78,8 +84,6 @@ void Window::setup(){
     if(_window!=0) delwin(_window);
 
     _window = newwin(_box->height(), _box->width(), _box->row(), _box->col()); 
-
-    stale();
 }
 
 void Window::refresh(){

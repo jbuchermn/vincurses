@@ -10,9 +10,11 @@
 
 #define VIN_ACTIVE_WINDOW_BORDER_  1
 #define VIN_SELECTION_             2
+#define VIN_HIGHLIGHT_             3
 
 #define VIN_ACTIVE_WINDOW_BORDER   COLOR_PAIR(VIN_ACTIVE_WINDOW_BORDER_)
 #define VIN_SELECTION              COLOR_PAIR(VIN_SELECTION_           )
+#define VIN_HIGHLIGHT              COLOR_PAIR(VIN_HIGHLIGHT_           )
 
 namespace ViNCurses{
     class Window;

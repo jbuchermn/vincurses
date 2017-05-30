@@ -65,6 +65,17 @@ void Box::move(char cmd){
     }
 }
 
+void Box::resize(char cmd){
+    if(_parent==0) return;
+
+    if(cmd=='0') _parent->_first_child_percentage=0.5;
+    else if((_parent->_first_child==this)==(cmd=='+')){
+        _parent->_first_child_percentage=std::min(0.9, _parent->_first_child_percentage+0.05);
+    }else{
+        _parent->_first_child_percentage=std::max(0.1, _parent->_first_child_percentage-0.05);
+    }
+}
+
 Box* Box::find_leaf_in_dir(char dir){
     if(_parent==0) return 0;
     if((_parent->_split_horizontal)!=(dir=='h' or dir=='l')){
