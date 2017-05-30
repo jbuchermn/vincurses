@@ -13,6 +13,8 @@ Window::Window():
     _parent(0),
     _box(0),
     _stale(true),
+    _height(0),
+    _width(0),
     _offset_row(0),
     _offset_col(0){
 
@@ -32,17 +34,12 @@ void Window::clear(){
 
 void Window::print(Buffer::Element* element){
     if(_window==0) return;
-    
-    int height, width;
-    getmaxyx(_window, height, width);
-    height-=2; // Account for borders
-    width-=2;
-    if(width<=0 or height<=0) return;
+    if(_width<=0 or _height<=0) return;
 
     int y = _offset_row + element->row();
     int x = _offset_col + element->col();
 
-    if(y<0 or y>=height) return;
+    if(y<0 or y>=_height) return;
 
     std::string c = element->content();
     if(x<0){
@@ -51,8 +48,8 @@ void Window::print(Buffer::Element* element){
         x=0;
     }
     
-    if(x+(int)c.length() >= width){
-        c = c.substr(0, std::max(0, width-x));
+    if(x+(int)c.length() >= _width){
+        c = c.substr(0, std::max(0, _width-x));
     }
 
     if(element->attr()!=0) wattron(_window, element->attr());
@@ -84,6 +81,11 @@ void Window::setup(){
     if(_window!=0) delwin(_window);
 
     _window = newwin(_box->height(), _box->width(), _box->row(), _box->col()); 
+    getmaxyx(_window, _height, _width);
+
+    // Borders
+    _height-=2;
+    _width-=2;
 }
 
 void Window::refresh(){
@@ -119,6 +121,33 @@ void Window::stale(){ _stale=true; }
 void Window::set_offset(int row, int col){
     _offset_row=row;
     _offset_col=col;
+}
+
+bool Window::command_move_buffer(std::string command){
+    
+    if(command=="h"){
+        if(_offset_col<0){
+            _offset_col++;
+            return true;
+        }
+    }else if(command=="k"){
+        if(_offset_row<0){
+            _offset_row++;
+            return true;
+        }
+    }else if(command=="j"){
+        if(_buffer.height()+_offset_row>_height){
+            _offset_row--;
+            return true;
+        }
+    }else if(command=="l"){
+        if(_buffer.width()+_offset_col>_width){
+            _offset_col--;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool Window::command(std::string command){

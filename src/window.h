@@ -17,7 +17,9 @@ namespace ViNCurses{
         
         // Managed by this class
         WINDOW* _window;
-        
+        int _height;
+        int _width;
+
         Buffer _buffer;
         bool _stale;
 
@@ -26,6 +28,8 @@ namespace ViNCurses{
 
         void print(Buffer::Element* element);
     protected:
+        // Preimplemented
+        bool command_move_buffer(std::string command);
 
         // Render 
         virtual void render(Buffer& buffer)=0;
