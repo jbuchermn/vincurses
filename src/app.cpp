@@ -68,10 +68,10 @@ void App::run(){
         
         if(cmd==":q"){ // Quit
             break;
-        }else if(cmd.length()==1 and cmd[0]==23){ // <C-w> to switch or move active window
+        }else if(cmd.length()==1 and cmd[0]==23){ // <C-w> to switch, resize or move active window
             std::string c = input();
             if(c.length()!=1){
-                status("Usage: <C-w><hjklHJKL>");
+                status("Usage: <C-w><hjklHJKL+->");
             }else{
                 char cmd = c[0];
                 if(cmd=='H' or cmd=='J' or cmd=='K' or cmd=='L'){
