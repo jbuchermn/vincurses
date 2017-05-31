@@ -8,7 +8,8 @@
 
 using namespace ViNCurses;
 
-Window::Window(): 
+Window::Window(std::string title):
+    _title(title),
     _window(0),
     _parent(0),
     _box(0),
@@ -60,12 +61,7 @@ void Window::print(Buffer::Element* element){
 bool Window::assigned() const{ return _parent!=0 and _box!=0; }
 App* Window::parent() const{ return _parent; }
 Box* Window::box() const { return _box; }
-bool Window::active() const { 
-    bool active;
-    int index;
-    _parent->index_active(this, index, active);
-    return active;
-}
+bool Window::active() const { return _parent->active(this); }
 void Window::offset(int& row, int& col) const{ row=_offset_row; col=_offset_col; }
 
 
@@ -73,6 +69,7 @@ void Window::assign(App* parent, Box* box){
     _parent=parent;
     _box=box;
 
+    // Ensure initial rendering
     stale();
 }
 
@@ -89,39 +86,41 @@ void Window::setup(){
 }
 
 void Window::refresh(){
-    int index;
-    bool active;
-    _parent->index_active(this, index, active);
 
     // Needs rerendering?
     if(_stale){
-        _buffer.clear_buffer();
-        render(_buffer);
-        _buffer.flush_buffer();
+        render();
         _stale=false;
     }
+
+    // Flush to make sure
+    buffer.flush();
 
     // Erase
     werase(_window);
 
     // Write content
-    std::vector<Buffer::Element*> content = _buffer.content();
+    std::vector<Buffer::Element*> content = buffer.content();
     for(unsigned int i=0; i<content.size(); i++) print(content[i]);
    
     // Write border
-    if(active) wattron(_window, VIN_ACTIVE_WINDOW_BORDER);
-    wborder(_window,'|','|','-','-','0'+index,' ',' ',' ');
-    if(active) wattroff(_window, VIN_ACTIVE_WINDOW_BORDER);
+    if(_parent->active(this)) wattron(_window, VIN_ACTIVE_WINDOW_BORDER);
+    ::box(_window,0,0);
+    mvwprintw(_window,0,2,_title.c_str());
+    if(_parent->active(this)) wattroff(_window, VIN_ACTIVE_WINDOW_BORDER);
     
     // Refresh
     wrefresh(_window);
 }
+
 
 void Window::stale(){ _stale=true; }
 void Window::set_offset(int row, int col){
     _offset_row=row;
     _offset_col=col;
 }
+
+void Window::title(std::string title){ _title=title; }
 
 bool Window::command_move_buffer(std::string command){
     
@@ -136,12 +135,12 @@ bool Window::command_move_buffer(std::string command){
             return true;
         }
     }else if(command=="j"){
-        if(_buffer.height()+_offset_row>_height){
+        if(buffer.height()+_offset_row>_height){
             _offset_row--;
             return true;
         }
     }else if(command=="l"){
-        if(_buffer.width()+_offset_col>_width){
+        if(buffer.width()+_offset_col>_width){
             _offset_col--;
             return true;
         }
@@ -149,6 +148,8 @@ bool Window::command_move_buffer(std::string command){
 
     return false;
 }
+
+
 
 bool Window::command(std::string command){
     return false;

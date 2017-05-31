@@ -11,6 +11,8 @@ namespace ViNCurses{
     class Box;
 
     class Window{
+        std::string _title;
+
         // Managed externally
         App* _parent;
         Box* _box;
@@ -20,7 +22,6 @@ namespace ViNCurses{
         int _height;
         int _width;
 
-        Buffer _buffer;
         bool _stale;
 
         int _offset_row;
@@ -32,11 +33,12 @@ namespace ViNCurses{
         bool command_move_buffer(std::string command);
 
         // Render 
-        virtual void render(Buffer& buffer)=0;
+        Buffer buffer;
+        virtual void render()=0;
 
     public:
         // Internal methods
-        Window();
+        Window(std::string title);
         virtual ~Window();
         void assign(App* parent, Box* box);
         void setup();
@@ -50,13 +52,20 @@ namespace ViNCurses{
         void offset(int& row, int& col) const;
         bool active() const;
 
-        // Rendering control
+        // Setter and rendering control
+        // To handle rendering:
+        //      -> Either call stale() upon change, then during refresh() - once a cycle - render() will be called.
+        //         Don't forget to clean the buffer if using this method
+        //      -> Alternatively just write to the buffer, whenever you like. Currently flush does not issue a refresh,
+        //         but during refresh any flushed changes will be written
         void stale();
         void set_offset(int row, int col);
+        void title(std::string title);
 
         // Command flow
         virtual bool command(std::string cmd);
         virtual void on_active_change();
+
     };
 }
 

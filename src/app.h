@@ -19,6 +19,7 @@
 namespace ViNCurses{
     class Window;
     class Box;
+    class StdoutWindow;
 
     class App{
         WINDOW* _w_input;
@@ -35,6 +36,8 @@ namespace ViNCurses{
         void setup_windows();
         void set_active_window(int index);
 
+        // Standard windows
+        StdoutWindow* _w_stdout;
     protected:
         // Add and remove a window, box!=0 except for first window
         void add_window(Window* window, Box* box=0);
@@ -51,7 +54,7 @@ namespace ViNCurses{
         virtual ~App();
         
         // internal
-        void index_active(const Window* window, int& index, bool& active) const;
+        bool active(const Window* window) const;
         
         // Main function
         void run();

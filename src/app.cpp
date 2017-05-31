@@ -4,6 +4,7 @@
 #include "window.h"
 #include "box.h"
 
+#include "stdout_window.h"
 
 using namespace ViNCurses;
 
@@ -13,7 +14,8 @@ App::App():
     _w_status(0), 
     _main_height(0),
     _main_width(0),
-    _active_index(0){
+    _active_index(0),
+    _w_stdout(new StdoutWindow()){
 
 }
 
@@ -25,7 +27,9 @@ App::~App(){
 bool App::command(std::string cmd, bool before_window){ return false; }
 
 void App::run(){
-    
+    // Reroute std::cout and std::cerr
+    _w_stdout->start();
+
     // Setup and start ncurses
     initscr();
     getmaxyx(stdscr, _main_height, _main_width);
@@ -100,6 +104,18 @@ void App::run(){
             }
 
             processed=true;
+        }else if(cmd==":stdout"){
+            if(_w_stdout->assigned()){
+                remove_window(_w_stdout);
+            }else{
+                if(_windows.size()>0){
+                    add_window(_w_stdout, _windows[0]->box()->root()->split('J',0.2));
+                }else{
+                    add_window(_w_stdout);
+                }
+            }
+
+            processed=true;
         }
 
         working(true);
@@ -114,6 +130,9 @@ void App::run(){
     }
 
     endwin();
+    
+    // Free std::cout and std::cerr
+    _w_stdout->stop();
 }
 
 void App::refresh(){
@@ -138,14 +157,14 @@ void App::setup_windows(){
     for(unsigned int i=0; i<_windows.size(); i++) _windows[i]->setup();
 }
 
-void App::index_active(const Window* window, int& index, bool& active) const{
+bool App::active(const Window* window) const{
     for(unsigned int i=0; i<_windows.size(); i++){
         if(_windows[i]==window){
-            index  = i+1;
-            active = (index==_active_index);
-            return;
+            return (i+1 == _active_index);
         }
     }
+
+    return false;
 }
 
 
@@ -158,7 +177,7 @@ void App::add_window(Window* window, Box* box){
     _windows.push_back(window);
 
     setup_windows();
-    set_active_window(_active_index);
+    set_active_window(_windows.size());
     refresh();
 }
 
