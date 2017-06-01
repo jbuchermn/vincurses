@@ -135,6 +135,8 @@ void Buffer::clear(){
     flush();
     for(unsigned int i=0; i<_content.size(); i++) delete _content[i];
     _content.erase(_content.begin(), _content.begin() + _content.size());
+
+    cursor(0,0);
 }
 
 
