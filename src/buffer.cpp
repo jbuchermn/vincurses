@@ -168,7 +168,7 @@ unsigned int Buffer::width() const{
 unsigned int Buffer::height() const{
     unsigned int height=0;
     for(unsigned int i=0; i<_content.size(); i++){
-        height = std::max(height, _content[i]->row());
+        height = std::max(height, _content[i]->row()+1);
     }
 
     return height;
